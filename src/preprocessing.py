@@ -17,60 +17,24 @@ def local_normalization(
 
     image = image.astype(np.float32)
 
-    h, w = image.shape
-    pad = window_size // 2
-
-    padded = cv2.copyMakeBorder(
+    mean = cv2.blur(
         image,
-        pad,
-        pad,
-        pad,
-        pad,
+        (window_size, window_size),
         borderType=cv2.BORDER_REFLECT,
     )
 
-    padded_sq = padded ** 2
+    mean_sq = cv2.blur(
+        image ** 2,
+        (window_size, window_size),
+        borderType=cv2.BORDER_REFLECT,
+    )
 
-    # Integral images
-    integral = cv2.integral(padded)
-    integral_sq = cv2.integral(padded_sq)
+    var = mean_sq - mean ** 2
+    var = np.maximum(var, 0.0)
 
-    area = window_size * window_size
+    std = np.sqrt(var)
 
-    output = np.zeros((h, w), dtype=np.float32)
-
-    for y in range(h):
-        for x in range(w):
-            y0 = y
-            x0 = x
-            y1 = y + window_size
-            x1 = x + window_size
-
-            # Sum over local window using integral image
-            window_sum = (
-                integral[y1, x1]
-                - integral[y0, x1]
-                - integral[y1, x0]
-                + integral[y0, x0]
-            )
-
-            window_sq_sum = (
-                integral_sq[y1, x1]
-                - integral_sq[y0, x1]
-                - integral_sq[y1, x0]
-                + integral_sq[y0, x0]
-            )
-
-            local_mean = window_sum / area
-
-            local_var = (window_sq_sum / area) - (local_mean ** 2)
-            local_var = max(local_var, 0.0)
-
-            local_std = np.sqrt(local_var)
-            local_std = max(local_std, eps)
-
-            # Normalize center pixel using its local neighborhood
-            output[y, x] = (image[y, x] - local_mean) / local_std
+    output = (image - mean) / (std + eps)
 
     if normalize_output:
         output -= output.min()
@@ -81,10 +45,53 @@ def local_normalization(
     return output
 
 
+def _equalize_window(
+    window: np.ndarray,
+    clip_histogram: bool = False,
+    clip_limit: float = 2.0,
+    num_bins: int = 256,
+) -> np.ndarray:
+
+    if not clip_histogram:
+        return cv2.equalizeHist(window)
+
+    area = window.size
+
+    hist = np.bincount(
+        window.ravel(),
+        minlength=num_bins,
+    ).astype(np.float32)
+
+    max_bin_count = max(
+        1,
+        int(clip_limit * area / num_bins),
+    )
+
+    excess = np.maximum(hist - max_bin_count, 0.0)
+    excess_total = np.sum(excess)
+
+    hist = np.minimum(hist, max_bin_count)
+
+    hist += excess_total / num_bins
+
+    cdf = np.cumsum(hist)
+
+    if cdf[-1] <= 0:
+        return window.copy()
+
+    cdf /= cdf[-1]
+
+    lut = np.floor(255 * cdf).astype(np.uint8)
+
+    return lut[window]
+
+
 def local_histogram_equalization(
     image: np.ndarray,
     window_size: int = 15,
     stride: int = 1,
+    clip_histogram: bool = False,
+    clip_limit: float = 2.0,
     normalize_output: bool = True,
 ) -> np.ndarray:
 
@@ -96,6 +103,9 @@ def local_histogram_equalization(
 
     if stride <= 0:
         raise ValueError("stride must be a positive integer")
+
+    if clip_limit <= 0:
+        raise ValueError("clip_limit must be positive")
 
     image = image.astype(np.uint8)
 
@@ -124,7 +134,11 @@ def local_histogram_equalization(
                 x : x + window_size,
             ]
 
-            equalized_window = cv2.equalizeHist(window)
+            equalized_window = _equalize_window(
+                window,
+                clip_histogram=clip_histogram,
+                clip_limit=clip_limit,
+            )
 
             acc[
                 y : y + window_size,
