@@ -600,7 +600,7 @@ def _save_figures_if_requested(
 
 def _resolve_output_csv(config: dict[str, Any]) -> Path:
     outputs_cfg = config.get("outputs", {})
-    return Path(outputs_cfg.get("results_csv", "outputs/results/experiments.csv"))
+    return Path(outputs_cfg.get("results_csv", "results/experiments.csv"))
 
 
 def _resolve_plan_output_csv(plan: dict[str, Any]) -> Path:
@@ -609,7 +609,7 @@ def _resolve_plan_output_csv(plan: dict[str, Any]) -> Path:
     if outputs_cfg is None:
         outputs_cfg = plan.get("defaults", {}).get("outputs", {})
 
-    return Path(outputs_cfg.get("results_csv", "outputs/results/experiments.csv"))
+    return Path(outputs_cfg.get("results_csv", "results/experiments.csv"))
 
 
 def _deep_merge(

@@ -18,7 +18,7 @@ El runner lee todos los ficheros `.yaml` y `.yml` de `configs/`, los ejecuta en
 orden alfabetico y anade una fila por valor de `d'` al CSV de resultados.
 
 ```bash
-python scripts/run_experiments.py --config-dir configs --results-csv outputs/results/experiments.csv
+python scripts/run_experiments.py --config-dir configs --results-csv results/experiments.csv
 ```
 
 Tambien se puede ejecutar un unico plan YAML con defaults compartidos y una
@@ -36,7 +36,7 @@ defaults:
     dataset: orl
     data_dir: data
   outputs:
-    results_csv: outputs/results/experiment_plan.csv
+    results_csv: results/experiment_plan.csv
 
 experiments:
   -

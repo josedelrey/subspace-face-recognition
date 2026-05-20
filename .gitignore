@@ -1,6 +1,10 @@
 # Dataset
 data/
 
+# Generated experiment artifacts
+outputs/
+results/
+
 # Notes
 notes.md
 

@@ -26,7 +26,7 @@ defaults:
     step: 1
 
   outputs:
-    results_csv: outputs/results/experiment_plan.csv
+    results_csv: results/experiment_plan.csv
     save_figures: false
     figures_dir: outputs/figures
     save_error_curve: true
