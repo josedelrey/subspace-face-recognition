@@ -25,7 +25,6 @@ def preprocess(image):
     return local_normalization(
         image,
         window_size=15,
-        normalize_output=True,
     )
 
 

@@ -2,11 +2,10 @@ import cv2
 import numpy as np
 
 
-def _normalize_to_uint8(
+def _to_uint8_display(
     image: np.ndarray,
     eps: float = 1e-6,
 ) -> np.ndarray:
-
     image = image.astype(np.float32)
 
     min_val = image.min()
@@ -18,12 +17,18 @@ def _normalize_to_uint8(
     return image.astype(np.uint8)
 
 
+def _validate_output_type(output_type: str) -> None:
+    if output_type not in {"float32", "uint8"}:
+        raise ValueError("output_type must be 'float32' or 'uint8'")
+
+
 def _equalize_window(
     window: np.ndarray,
     clip_histogram: bool = False,
     clip_limit: float = 2.0,
     num_bins: int = 256,
 ) -> np.ndarray:
+    window = window.astype(np.uint8)
 
     hist = np.bincount(
         window.ravel(),
@@ -31,7 +36,6 @@ def _equalize_window(
     ).astype(np.float32)
 
     if clip_histogram:
-
         area = window.size
 
         max_bin_count = max(
@@ -43,7 +47,6 @@ def _equalize_window(
         excess_total = np.sum(excess)
 
         hist = np.minimum(hist, max_bin_count)
-
         hist += excess_total / num_bins
 
     cdf = np.cumsum(hist)
@@ -59,8 +62,8 @@ def _equalize_window(
 
 
 def _integral_image(image: np.ndarray) -> np.ndarray:
-
     image = image.astype(np.float64)
+
     h, w = image.shape
 
     integral = np.zeros(
@@ -73,18 +76,102 @@ def _integral_image(image: np.ndarray) -> np.ndarray:
 
         for x in range(1, w + 1):
             row_sum += image[y - 1, x - 1]
-
             integral[y, x] = integral[y - 1, x] + row_sum
 
     return integral
+
+
+def global_normalization(
+    image: np.ndarray,
+    eps: float = 1e-6,
+    output_type: str = "float32",
+) -> np.ndarray:
+    """
+    Global z-score normalization.
+
+    Equivalent global version of local_normalization.
+
+    By default, returns float32, which is suitable for PCA, Eigenfaces
+    and Fisherfaces.
+
+    Use output_type='uint8' only for visualization or saving images.
+    """
+
+    _validate_output_type(output_type)
+
+    if image.ndim != 2:
+        raise ValueError("Input image must be grayscale")
+
+    image = image.astype(np.float32)
+
+    mean = np.mean(image)
+    std = np.std(image)
+
+    std = max(std, eps)
+
+    output = (image - mean) / std
+
+    if output_type == "uint8":
+        return _to_uint8_display(output, eps=eps)
+
+    return output.astype(np.float32)
+
+
+def global_histogram_equalization(
+    image: np.ndarray,
+    clip_histogram: bool = False,
+    clip_limit: float = 2.0,
+    output_type: str = "float32",
+) -> np.ndarray:
+    """
+    Global histogram equalization.
+
+    Equivalent global version of local_histogram_equalization.
+
+    By default, returns float32, which is suitable for PCA, Eigenfaces
+    and Fisherfaces.
+
+    Use output_type='uint8' only for visualization or saving images.
+    """
+
+    _validate_output_type(output_type)
+
+    if image.ndim != 2:
+        raise ValueError("Input image must be grayscale")
+
+    if clip_limit <= 0:
+        raise ValueError("clip_limit must be positive")
+
+    image = image.astype(np.uint8)
+
+    output = _equalize_window(
+        image,
+        clip_histogram=clip_histogram,
+        clip_limit=clip_limit,
+    )
+
+    if output_type == "uint8":
+        return output.astype(np.uint8)
+
+    return output.astype(np.float32)
 
 
 def local_normalization(
     image: np.ndarray,
     window_size: int = 15,
     eps: float = 1e-6,
-    normalize_output: bool = True,
+    output_type: str = "float32",
 ) -> np.ndarray:
+    """
+    Local z-score normalization.
+
+    By default, returns float32, which is suitable for PCA, Eigenfaces
+    and Fisherfaces.
+
+    Use output_type='uint8' only for visualization or saving images.
+    """
+
+    _validate_output_type(output_type)
 
     if image.ndim != 2:
         raise ValueError("Input image must be grayscale")
@@ -108,7 +195,6 @@ def local_normalization(
 
     padded_sq = padded ** 2
 
-    # Manual integral images
     integral = _integral_image(padded)
     integral_sq = _integral_image(padded_sq)
 
@@ -118,14 +204,12 @@ def local_normalization(
 
     for y in range(h):
         for x in range(w):
-
             y0 = y
             x0 = x
 
             y1 = y + window_size
             x1 = x + window_size
 
-            # Local sum using integral image
             window_sum = (
                 integral[y1, x1]
                 - integral[y0, x1]
@@ -133,7 +217,6 @@ def local_normalization(
                 + integral[y0, x0]
             )
 
-            # Local squared sum using integral image
             window_sq_sum = (
                 integral_sq[y1, x1]
                 - integral_sq[y0, x1]
@@ -148,6 +231,7 @@ def local_normalization(
             ) - (local_mean ** 2)
 
             local_var = max(local_var, 0.0)
+
             local_std = np.sqrt(local_var)
             local_std = max(local_std, eps)
 
@@ -155,10 +239,10 @@ def local_normalization(
                 image[y, x] - local_mean
             ) / local_std
 
-    if normalize_output:
-        output = _normalize_to_uint8(output, eps=eps)
+    if output_type == "uint8":
+        return _to_uint8_display(output, eps=eps)
 
-    return output
+    return output.astype(np.float32)
 
 
 def local_histogram_equalization(
@@ -167,8 +251,18 @@ def local_histogram_equalization(
     stride: int = 1,
     clip_histogram: bool = False,
     clip_limit: float = 2.0,
-    normalize_output: bool = True,
+    output_type: str = "float32",
 ) -> np.ndarray:
+    """
+    Local histogram equalization.
+
+    By default, returns float32, which is suitable for PCA, Eigenfaces
+    and Fisherfaces.
+
+    Use output_type='uint8' only for visualization or saving images.
+    """
+
+    _validate_output_type(output_type)
 
     if image.ndim != 2:
         raise ValueError("Input image must be grayscale")
@@ -203,7 +297,6 @@ def local_histogram_equalization(
 
     for y in range(0, padded_h - window_size + 1, stride):
         for x in range(0, padded_w - window_size + 1, stride):
-
             window = padded[
                 y : y + window_size,
                 x : x + window_size,
@@ -232,7 +325,7 @@ def local_histogram_equalization(
         pad : pad + w,
     ]
 
-    if normalize_output:
-        output = _normalize_to_uint8(output)
+    if output_type == "uint8":
+        return output.astype(np.uint8)
 
-    return output.astype(np.uint8)
+    return output.astype(np.float32)
