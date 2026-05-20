@@ -1,0 +1,84 @@
+defaults:
+  data:
+    dataset: orl
+    data_dir: data
+    train_image_ids: [1, 2, 3, 4, 5]
+    test_image_ids: [6, 7, 8, 9, 10]
+
+  preprocessing:
+    name: local_normalization
+    params:
+      window_size: 15
+
+  classifier:
+    name: nearest_neighbor
+    params:
+      k: 1
+      distance: euclidean
+
+  projection:
+    drop_first_components: 0
+    normalize: false
+
+  components:
+    start: 1
+    stop: auto
+    step: 1
+
+  outputs:
+    results_csv: outputs/results/experiment_plan.csv
+    save_figures: false
+    figures_dir: outputs/figures
+    save_error_curve: true
+    save_mean_face: true
+    save_components: true
+    n_plot_components: 16
+
+experiments:
+  -
+    experiment:
+      name: eigenfaces_local_norm_euclidean
+    model:
+      name: eigenfaces
+      params:
+        eps: 1e-10
+
+  -
+    experiment:
+      name: eigenfaces_local_norm_cosine_l2
+    model:
+      name: eigenfaces
+      params:
+        eps: 1e-10
+    classifier:
+      params:
+        distance: cosine
+    projection:
+      normalize: true
+
+  -
+    experiment:
+      name: fisherfaces_local_norm_euclidean
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1e-6
+        eps: 1e-10
+
+  -
+    experiment:
+      name: fisherfaces_local_norm_cosine_l2
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1e-6
+        eps: 1e-10
+    classifier:
+      params:
+        distance: cosine
+    projection:
+      normalize: true

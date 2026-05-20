@@ -1,5 +1,6 @@
 import numpy as np
 
+from src.features import project_subspace_features
 from src.metrics import accuracy_score, error_rate
 from src.nearest_neighbor import NearestNeighborClassifier
 
@@ -11,14 +12,23 @@ def evaluate_subspace_model(
     X_test: np.ndarray,
     y_test: np.ndarray,
     component_values: list[int],
+    projection_params: dict | None = None,
+    classifier_params: dict | None = None,
+    verbose: bool = True,
 ):
     results = []
+    classifier_params = {} if classifier_params is None else classifier_params
 
     for n_components in component_values:
-        Z_train = model.transform(X_train, n_components=n_components)
-        Z_test = model.transform(X_test, n_components=n_components)
+        Z_train, Z_test = project_subspace_features(
+            model=model,
+            X_train=X_train,
+            X_test=X_test,
+            n_components=n_components,
+            projection_params=projection_params,
+        )
 
-        classifier = NearestNeighborClassifier()
+        classifier = NearestNeighborClassifier(**classifier_params)
         classifier.fit(Z_train, y_train)
 
         y_pred = classifier.predict(Z_test)
@@ -34,10 +44,11 @@ def evaluate_subspace_model(
             }
         )
 
-        print(
-            f"d' = {n_components:3d} | "
-            f"accuracy = {acc:.4f} | "
-            f"error = {err:.4f}"
-        )
+        if verbose:
+            print(
+                f"d' = {n_components:3d} | "
+                f"accuracy = {acc:.4f} | "
+                f"error = {err:.4f}"
+            )
 
     return results

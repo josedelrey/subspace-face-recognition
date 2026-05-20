@@ -1,10 +1,15 @@
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_error_curve(results, output_path: Path, title: str):
+def plot_error_curve(
+    results,
+    output_path: Path,
+    title: str,
+    show: bool = False,
+):
+    plt = _load_pyplot()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     component_values = [r["n_components"] for r in results]
@@ -12,16 +17,25 @@ def plot_error_curve(results, output_path: Path, title: str):
 
     plt.figure(figsize=(8, 5))
     plt.plot(component_values, errors, marker="o")
-    plt.xlabel("Dimensión del subespacio d'")
+    plt.xlabel("Dimension del subespacio d'")
     plt.ylabel("Tasa de error")
     plt.title(title)
     plt.grid(True)
     plt.tight_layout()
     plt.savefig(output_path, dpi=150)
-    plt.show()
+
+    if show:
+        plt.show()
+
+    plt.close()
 
 
-def plot_mean_face(model, output_path: Path):
+def plot_mean_face(
+    model,
+    output_path: Path,
+    show: bool = False,
+):
+    plt = _load_pyplot()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     mean_face = model.mean.reshape(model.image_shape)
@@ -32,10 +46,20 @@ def plot_mean_face(model, output_path: Path):
     plt.axis("off")
     plt.tight_layout()
     plt.savefig(output_path, dpi=150)
-    plt.show()
+
+    if show:
+        plt.show()
+
+    plt.close()
 
 
-def plot_components(model, output_path: Path, n_components: int = 16):
+def plot_components(
+    model,
+    output_path: Path,
+    n_components: int = 16,
+    show: bool = False,
+):
+    plt = _load_pyplot()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     n_components = min(n_components, model.components.shape[0])
@@ -55,4 +79,14 @@ def plot_components(model, output_path: Path, n_components: int = 16):
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=150)
-    plt.show()
+
+    if show:
+        plt.show()
+
+    plt.close()
+
+
+def _load_pyplot():
+    import matplotlib.pyplot as plt
+
+    return plt

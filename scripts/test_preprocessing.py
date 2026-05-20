@@ -1,7 +1,10 @@
-import cv2
 import matplotlib.pyplot as plt
 from pathlib import Path
+import sys
 
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
+from src.data import read_grayscale_image
 from src.preprocessing import (
     local_normalization,
     local_histogram_equalization,
@@ -9,11 +12,7 @@ from src.preprocessing import (
 
 
 image_path = Path("data/s1/1.pgm")
-
-img = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
-
-if img is None:
-    raise ValueError(f"Could not load image: {image_path}")
+img = read_grayscale_image(image_path)
 
 
 window_sizes = [7, 15, 31]

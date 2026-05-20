@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 
 
@@ -184,13 +183,10 @@ def local_normalization(
     h, w = image.shape
     pad = window_size // 2
 
-    padded = cv2.copyMakeBorder(
+    padded = np.pad(
         image,
-        pad,
-        pad,
-        pad,
-        pad,
-        borderType=cv2.BORDER_REFLECT,
+        ((pad, pad), (pad, pad)),
+        mode="reflect",
     )
 
     padded_sq = padded ** 2
@@ -281,13 +277,10 @@ def local_histogram_equalization(
     h, w = image.shape
     pad = window_size // 2
 
-    padded = cv2.copyMakeBorder(
+    padded = np.pad(
         image,
-        pad,
-        pad,
-        pad,
-        pad,
-        borderType=cv2.BORDER_REFLECT,
+        ((pad, pad), (pad, pad)),
+        mode="reflect",
     )
 
     acc = np.zeros_like(padded, dtype=np.float32)

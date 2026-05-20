@@ -2,6 +2,11 @@
 name = "subspace-face-recognition"
 version = "0.1.0"
 requires-python = ">=3.10"
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "pyyaml",
+]
 
-[tool.setuptools]
-packages = ["src"]
+[tool.setuptools.packages.find]
+include = ["src*"]
