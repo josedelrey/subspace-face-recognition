@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class NearestNeighborClassifier:
+class KNNClassifier:
     def __init__(
         self,
         k: int = 1,

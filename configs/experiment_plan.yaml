@@ -5,10 +5,7 @@ defaults:
     train_image_ids: [1, 2, 3, 4, 5]
     test_image_ids: [6, 7, 8, 9, 10]
 
-  preprocessing:
-    name: local_normalization
-    params:
-      window_size: 15
+  preprocessing: false
 
   classifier:
     name: nearest_neighbor
@@ -19,6 +16,7 @@ defaults:
   projection:
     drop_first_components: 0
     normalize: false
+    normalize_eps: 1.0e-12
 
   components:
     start: 1
@@ -26,30 +24,468 @@ defaults:
     step: 1
 
   outputs:
-    results_csv: results/experiment_plan.csv
-    save_figures: false
-    figures_dir: outputs/figures
+    results_csv: results/final_full_experiment_plan.csv
+    save_figures: true
+    figures_dir: outputs/figures/final_full_plan
     save_error_curve: true
-    save_mean_face: true
-    save_components: true
+    save_mean_face: false
+    save_components: false
     n_plot_components: 16
 
+
 experiments:
-  -
-    experiment:
-      name: eigenfaces_local_norm_euclidean
-    model:
-      name: eigenfaces
-      params:
-        eps: 1e-10
+
+  # ============================================================
+  # 1. RAW BASELINES
+  # ============================================================
 
   -
     experiment:
-      name: eigenfaces_local_norm_cosine_l2
+      name: eigenfaces_raw_euclidean_k1
     model:
       name: eigenfaces
       params:
-        eps: 1e-10
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_raw_euclidean_k1
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+
+  # ============================================================
+  # 2. GLOBAL NORMALIZATION
+  # ============================================================
+
+  -
+    experiment:
+      name: eigenfaces_global_norm_euclidean_k1
+    preprocessing:
+      name: global_normalization
+      params:
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_global_norm_euclidean_k1
+    preprocessing:
+      name: global_normalization
+      params:
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+
+  # ============================================================
+  # 3. GLOBAL HISTOGRAM EQUALIZATION
+  # ============================================================
+
+  -
+    experiment:
+      name: eigenfaces_global_histeq_euclidean_k1
+    preprocessing:
+      name: global_histogram_equalization
+      params:
+        clip_histogram: false
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_global_histeq_euclidean_k1
+    preprocessing:
+      name: global_histogram_equalization
+      params:
+        clip_histogram: false
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+
+  # ============================================================
+  # 4. GLOBAL CLIPPED HISTOGRAM EQUALIZATION
+  # ============================================================
+
+  -
+    experiment:
+      name: eigenfaces_global_clipped_histeq_c2_euclidean_k1
+    preprocessing:
+      name: global_histogram_equalization
+      params:
+        clip_histogram: true
+        clip_limit: 2.0
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_global_clipped_histeq_c2_euclidean_k1
+    preprocessing:
+      name: global_histogram_equalization
+      params:
+        clip_histogram: true
+        clip_limit: 2.0
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+
+  # ============================================================
+  # 5. LOCAL NORMALIZATION - WINDOW SIZE STUDY
+  # ============================================================
+
+  -
+    experiment:
+      name: eigenfaces_local_norm_w5_euclidean_k1
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 5
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: eigenfaces_local_norm_w15_euclidean_k1
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 15
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: eigenfaces_local_norm_w31_euclidean_k1
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 31
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_local_norm_w5_euclidean_k1
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 5
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_local_norm_w15_euclidean_k1
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 15
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_local_norm_w31_euclidean_k1
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 31
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+
+  # ============================================================
+  # 6. LOCAL HISTOGRAM EQUALIZATION - WINDOW SIZE STUDY
+  # ============================================================
+
+  -
+    experiment:
+      name: eigenfaces_local_histeq_w5_euclidean_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 5
+        stride: 1
+        clip_histogram: false
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: eigenfaces_local_histeq_w15_euclidean_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 15
+        stride: 1
+        clip_histogram: false
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: eigenfaces_local_histeq_w31_euclidean_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 31
+        stride: 1
+        clip_histogram: false
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_local_histeq_w5_euclidean_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 5
+        stride: 1
+        clip_histogram: false
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_local_histeq_w15_euclidean_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 15
+        stride: 1
+        clip_histogram: false
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_local_histeq_w31_euclidean_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 31
+        stride: 1
+        clip_histogram: false
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+
+  # ============================================================
+  # 7. LOCAL CLIPPED HISTOGRAM EQUALIZATION - CLIP LIMIT STUDY
+  # ============================================================
+
+  -
+    experiment:
+      name: eigenfaces_local_clipped_histeq_w15_c1_euclidean_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 15
+        stride: 1
+        clip_histogram: true
+        clip_limit: 1.0
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: eigenfaces_local_clipped_histeq_w15_c2_euclidean_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 15
+        stride: 1
+        clip_histogram: true
+        clip_limit: 2.0
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: eigenfaces_local_clipped_histeq_w15_c4_euclidean_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 15
+        stride: 1
+        clip_histogram: true
+        clip_limit: 4.0
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_local_clipped_histeq_w15_c1_euclidean_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 15
+        stride: 1
+        clip_histogram: true
+        clip_limit: 1.0
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_local_clipped_histeq_w15_c2_euclidean_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 15
+        stride: 1
+        clip_histogram: true
+        clip_limit: 2.0
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+  -
+    experiment:
+      name: fisherfaces_local_clipped_histeq_w15_c4_euclidean_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 15
+        stride: 1
+        clip_histogram: true
+        clip_limit: 4.0
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+
+
+  # ============================================================
+  # 8. COSINE DISTANCE + L2 FEATURE NORMALIZATION
+  # ============================================================
+
+  -
+    experiment:
+      name: eigenfaces_raw_cosine_l2_k1
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
     classifier:
       params:
         distance: cosine
@@ -58,27 +494,442 @@ experiments:
 
   -
     experiment:
-      name: fisherfaces_local_norm_euclidean
+      name: fisherfaces_raw_cosine_l2_k1
     model:
       name: fisherfaces
       params:
         pca_components: auto
         lda_components: auto
-        regularization: 1e-6
-        eps: 1e-10
-
-  -
-    experiment:
-      name: fisherfaces_local_norm_cosine_l2
-    model:
-      name: fisherfaces
-      params:
-        pca_components: auto
-        lda_components: auto
-        regularization: 1e-6
-        eps: 1e-10
+        regularization: 1.0e-6
+        eps: 1.0e-10
     classifier:
       params:
         distance: cosine
     projection:
       normalize: true
+
+  -
+    experiment:
+      name: eigenfaces_global_norm_cosine_l2_k1
+    preprocessing:
+      name: global_normalization
+      params:
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    classifier:
+      params:
+        distance: cosine
+    projection:
+      normalize: true
+
+  -
+    experiment:
+      name: fisherfaces_global_norm_cosine_l2_k1
+    preprocessing:
+      name: global_normalization
+      params:
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+    classifier:
+      params:
+        distance: cosine
+    projection:
+      normalize: true
+
+  -
+    experiment:
+      name: eigenfaces_local_norm_w15_cosine_l2_k1
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 15
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    classifier:
+      params:
+        distance: cosine
+    projection:
+      normalize: true
+
+  -
+    experiment:
+      name: fisherfaces_local_norm_w15_cosine_l2_k1
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 15
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+    classifier:
+      params:
+        distance: cosine
+    projection:
+      normalize: true
+
+  -
+    experiment:
+      name: eigenfaces_local_histeq_w15_cosine_l2_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 15
+        stride: 1
+        clip_histogram: false
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    classifier:
+      params:
+        distance: cosine
+    projection:
+      normalize: true
+
+  -
+    experiment:
+      name: fisherfaces_local_histeq_w15_cosine_l2_k1
+    preprocessing:
+      name: local_histogram_equalization
+      params:
+        window_size: 15
+        stride: 1
+        clip_histogram: false
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+    classifier:
+      params:
+        distance: cosine
+    projection:
+      normalize: true
+
+
+  # ============================================================
+  # 9. KNN SENSITIVITY - RAW
+  # ============================================================
+
+  -
+    experiment:
+      name: eigenfaces_raw_euclidean_k3
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    classifier:
+      params:
+        k: 3
+        distance: euclidean
+
+  -
+    experiment:
+      name: eigenfaces_raw_euclidean_k5
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    classifier:
+      params:
+        k: 5
+        distance: euclidean
+
+  -
+    experiment:
+      name: fisherfaces_raw_euclidean_k3
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+    classifier:
+      params:
+        k: 3
+        distance: euclidean
+
+  -
+    experiment:
+      name: fisherfaces_raw_euclidean_k5
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+    classifier:
+      params:
+        k: 5
+        distance: euclidean
+
+
+  # ============================================================
+  # 10. KNN SENSITIVITY - REPRESENTATIVE PREPROCESSED SETUPS
+  # ============================================================
+
+  -
+    experiment:
+      name: eigenfaces_global_norm_euclidean_k3
+    preprocessing:
+      name: global_normalization
+      params:
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    classifier:
+      params:
+        k: 3
+        distance: euclidean
+
+  -
+    experiment:
+      name: eigenfaces_global_norm_euclidean_k5
+    preprocessing:
+      name: global_normalization
+      params:
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    classifier:
+      params:
+        k: 5
+        distance: euclidean
+
+  -
+    experiment:
+      name: eigenfaces_local_norm_w15_euclidean_k3
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 15
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    classifier:
+      params:
+        k: 3
+        distance: euclidean
+
+  -
+    experiment:
+      name: eigenfaces_local_norm_w15_euclidean_k5
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 15
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    classifier:
+      params:
+        k: 5
+        distance: euclidean
+
+  -
+    experiment:
+      name: fisherfaces_global_norm_euclidean_k3
+    preprocessing:
+      name: global_normalization
+      params:
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+    classifier:
+      params:
+        k: 3
+        distance: euclidean
+
+  -
+    experiment:
+      name: fisherfaces_global_norm_euclidean_k5
+    preprocessing:
+      name: global_normalization
+      params:
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+    classifier:
+      params:
+        k: 5
+        distance: euclidean
+
+  -
+    experiment:
+      name: fisherfaces_local_norm_w15_euclidean_k3
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 15
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+    classifier:
+      params:
+        k: 3
+        distance: euclidean
+
+  -
+    experiment:
+      name: fisherfaces_local_norm_w15_euclidean_k5
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 15
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: fisherfaces
+      params:
+        pca_components: auto
+        lda_components: auto
+        regularization: 1.0e-6
+        eps: 1.0e-10
+    classifier:
+      params:
+        k: 5
+        distance: euclidean
+
+
+  # ============================================================
+  # 11. EIGENFACES - DROP FIRST COMPONENTS
+  # ============================================================
+
+  -
+    experiment:
+      name: eigenfaces_raw_drop1_euclidean_k1
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    projection:
+      drop_first_components: 1
+
+  -
+    experiment:
+      name: eigenfaces_raw_drop3_euclidean_k1
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    projection:
+      drop_first_components: 3
+
+  -
+    experiment:
+      name: eigenfaces_global_norm_drop1_euclidean_k1
+    preprocessing:
+      name: global_normalization
+      params:
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    projection:
+      drop_first_components: 1
+
+  -
+    experiment:
+      name: eigenfaces_global_norm_drop3_euclidean_k1
+    preprocessing:
+      name: global_normalization
+      params:
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    projection:
+      drop_first_components: 3
+
+  -
+    experiment:
+      name: eigenfaces_local_norm_w15_drop1_euclidean_k1
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 15
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    projection:
+      drop_first_components: 1
+
+  -
+    experiment:
+      name: eigenfaces_local_norm_w15_drop3_euclidean_k1
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 15
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: eigenfaces
+      params:
+        eps: 1.0e-10
+    projection:
+      drop_first_components: 3

@@ -14,18 +14,18 @@ python scripts/run_fisherfaces.py
 
 ## Runner de experimentos
 
-El runner lee todos los ficheros `.yaml` y `.yml` de `configs/`, los ejecuta en
-orden alfabetico y anade una fila por valor de `d'` al CSV de resultados.
+El runner recibe un plan YAML con `defaults` compartidos y una lista de
+experimentos. Los ejecuta secuencialmente y anade una fila por valor de `d'` al
+CSV de resultados.
 
 ```bash
-python scripts/run_experiments.py --config-dir configs --results-csv results/experiments.csv
+python scripts/run_experiments.py configs/experiment_plan.yaml --overwrite
 ```
 
-Tambien se puede ejecutar un unico plan YAML con defaults compartidos y una
-lista de experimentos:
+Si no se indica ruta, usa `configs/experiment_plan.yaml`:
 
 ```bash
-python scripts/run_experiments.py --config-file configs/experiment_plan.yaml --overwrite
+python scripts/run_experiments.py --overwrite
 ```
 
 La estructura del plan es:

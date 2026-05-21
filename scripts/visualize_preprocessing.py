@@ -1,8 +1,5 @@
 import matplotlib.pyplot as plt
 from pathlib import Path
-import sys
-
-sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from src.data import read_grayscale_image
 from src.preprocessing import (

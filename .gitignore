@@ -1,12 +1,17 @@
 # Dataset
 data/
 
+# Context
+export_context.ps1
+project_context.txt
+
 # Generated experiment artifacts
 outputs/
 results/
 
 # Notes
 notes.md
+AGENTS.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

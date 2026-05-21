@@ -1,27 +1,19 @@
 from pathlib import Path
 import argparse
-import sys
 
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
-from src.experiments import run_config_directory, run_experiment_plan
+from src.experiments import run_experiment_plan
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Run YAML experiment configs sequentially.",
+        description="Run a YAML experiment plan sequentially.",
     )
     parser.add_argument(
-        "--config-dir",
+        "plan",
+        nargs="?",
         type=Path,
-        default=Path("configs"),
-        help="Folder containing .yaml/.yml experiment configs.",
-    )
-    parser.add_argument(
-        "--config-file",
-        type=Path,
-        default=None,
-        help="Single YAML experiment plan with defaults and experiments.",
+        default=Path("configs/experiment_plan.yaml"),
+        help="YAML experiment plan with defaults and an experiments list.",
     )
     parser.add_argument(
         "--results-csv",
@@ -32,7 +24,7 @@ def parse_args():
     parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="Delete the output CSV before running configs.",
+        help="Delete the output CSV before running the plan.",
     )
     parser.add_argument(
         "--quiet",
@@ -46,27 +38,16 @@ def parse_args():
 def main():
     args = parse_args()
 
-    if args.config_file is not None:
-        rows = run_experiment_plan(
-            plan_path=args.config_file,
-            results_csv=args.results_csv,
-            overwrite=args.overwrite,
-            verbose=not args.quiet,
-        )
-    else:
-        rows = run_config_directory(
-            config_dir=args.config_dir,
-            results_csv=args.results_csv,
-            overwrite=args.overwrite,
-            verbose=not args.quiet,
-        )
+    result = run_experiment_plan(
+        plan_path=args.plan,
+        results_csv=args.results_csv,
+        overwrite=args.overwrite,
+        verbose=not args.quiet,
+    )
 
     print()
-    print(f"Finished {len(rows)} result rows")
-    if args.results_csv is not None:
-        print(f"Results CSV: {args.results_csv}")
-    else:
-        print("Results CSV: configured in YAML")
+    print(f"Finished {len(result.rows)} result rows")
+    print(f"Results CSV: {result.results_csv}")
 
 
 if __name__ == "__main__":

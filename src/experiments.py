@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 import json
 import time
-from datetime import datetime, timezone
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
@@ -19,14 +19,12 @@ from src.preprocessing import (
     local_histogram_equalization,
     local_normalization,
 )
-from src.simple_yaml import load_yaml
-from src.train import evaluate_subspace_model
+from src.evaluation import evaluate_subspace_model
 from src.visualization import plot_components, plot_error_curve, plot_mean_face
 
 
 RESULT_FIELDNAMES = [
     "run_id",
-    "timestamp",
     "config_file",
     "experiment_name",
     "dataset",
@@ -68,61 +66,31 @@ PREPROCESSING_FUNCTIONS = {
 }
 
 
+@dataclass(frozen=True)
+class ExperimentPlanResult:
+    rows: list[dict[str, Any]]
+    results_csv: Path
+
+
 def load_experiment_config(path: Path) -> dict[str, Any]:
-    return load_yaml(path)
+    try:
+        import yaml
+    except ModuleNotFoundError as exc:
+        raise ModuleNotFoundError(
+            "PyYAML is required to read experiment plans. "
+            "Install project dependencies with: pip install -e ."
+        ) from exc
 
+    with path.open("r", encoding="utf-8") as config_file:
+        config = yaml.safe_load(config_file)
 
-def iter_config_files(config_dir: Path) -> list[Path]:
-    config_files = [
-        *config_dir.glob("*.yaml"),
-        *config_dir.glob("*.yml"),
-    ]
+    if config is None:
+        return {}
 
-    return sorted(config_files)
+    if not isinstance(config, dict):
+        raise ValueError(f"YAML document must be a mapping: {path}")
 
-
-def run_config_directory(
-    config_dir: Path,
-    results_csv: Path | None = None,
-    overwrite: bool = False,
-    verbose: bool = True,
-) -> list[dict[str, Any]]:
-    config_files = iter_config_files(config_dir)
-
-    if not config_files:
-        raise ValueError(f"No YAML configs found in {config_dir}")
-
-    if overwrite and results_csv is not None and results_csv.exists():
-        results_csv.unlink()
-
-    all_rows = []
-
-    for config_path in config_files:
-        if verbose:
-            print(f"\n=== Running {config_path} ===")
-
-        config = load_experiment_config(config_path)
-        rows = run_experiment(
-            config=config,
-            config_path=config_path,
-            verbose=verbose,
-        )
-
-        csv_path = results_csv or _resolve_output_csv(config)
-        append_results(rows, csv_path)
-        all_rows.extend(rows)
-
-        if verbose:
-            best = min(rows, key=lambda row: float(row["error"]))
-            print(
-                "Best "
-                f"d'={best['n_components']} | "
-                f"accuracy={float(best['accuracy']):.4f} | "
-                f"error={float(best['error']):.4f}"
-            )
-            print(f"Appended {len(rows)} rows to {csv_path}")
-
-    return all_rows
+    return config
 
 
 def run_experiment_plan(
@@ -130,7 +98,7 @@ def run_experiment_plan(
     results_csv: Path | None = None,
     overwrite: bool = False,
     verbose: bool = True,
-) -> list[dict[str, Any]]:
+) -> ExperimentPlanResult:
     plan = load_experiment_config(plan_path)
     defaults = plan.get("defaults", {})
     experiments = plan.get("experiments")
@@ -181,7 +149,7 @@ def run_experiment_plan(
             )
             print(f"Appended {len(rows)} rows to {output_csv}")
 
-    return all_rows
+    return ExperimentPlanResult(rows=all_rows, results_csv=output_csv)
 
 
 def run_experiment(
@@ -202,7 +170,7 @@ def run_experiment(
         "name",
         config_path.stem if config_path is not None else "experiment",
     )
-    run_id = experiment_cfg.get("run_id") or _timestamp_slug()
+    run_id = experiment_cfg.get("run_id") or _safe_slug(experiment_name)
 
     dataset = data_cfg.get("dataset", "orl")
 
@@ -265,7 +233,6 @@ def run_experiment(
         component_values=component_values,
         projection_params=projection_params,
         classifier_params=classifier_params,
-        verbose=verbose,
     )
 
     elapsed_seconds = time.perf_counter() - start_time
@@ -508,7 +475,6 @@ def _build_result_rows(
     model,
     elapsed_seconds: float,
 ) -> list[dict[str, Any]]:
-    timestamp = datetime.now(timezone.utc).isoformat()
     pca_components = getattr(model, "pca_components_count", "")
     image_height, image_width = image_shape
     classifier_k = classifier_params.get("k", 1)
@@ -523,7 +489,6 @@ def _build_result_rows(
         rows.append(
             {
                 "run_id": run_id,
-                "timestamp": timestamp,
                 "config_file": "" if config_path is None else str(config_path),
                 "experiment_name": experiment_name,
                 "dataset": dataset,
@@ -598,11 +563,6 @@ def _save_figures_if_requested(
         )
 
 
-def _resolve_output_csv(config: dict[str, Any]) -> Path:
-    outputs_cfg = config.get("outputs", {})
-    return Path(outputs_cfg.get("results_csv", "results/experiments.csv"))
-
-
 def _resolve_plan_output_csv(plan: dict[str, Any]) -> Path:
     outputs_cfg = plan.get("outputs")
 
@@ -645,10 +605,6 @@ def _ensure_experiment_name(
 
 def _to_json(value) -> str:
     return json.dumps(value, sort_keys=True)
-
-
-def _timestamp_slug() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
 
 
 def _safe_slug(value: str) -> str:

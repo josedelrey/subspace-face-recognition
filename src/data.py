@@ -79,10 +79,6 @@ def read_grayscale_image(image_path: Path) -> np.ndarray:
     return image
 
 
-def _read_grayscale_image(image_path: Path) -> np.ndarray:
-    return read_grayscale_image(image_path)
-
-
 def _read_pgm_image(image_path: Path) -> np.ndarray:
     with image_path.open("rb") as image_file:
         magic = _read_pgm_token(image_file)
