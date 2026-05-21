@@ -41,6 +41,14 @@ experiments:
 
   -
     experiment:
+      name: direct_raw_euclidean_k1
+    model:
+      name: direct
+      params:
+        center: false
+
+  -
+    experiment:
       name: eigenfaces_raw_euclidean_k1
     model:
       name: eigenfaces
@@ -62,6 +70,19 @@ experiments:
   # ============================================================
   # 2. GLOBAL NORMALIZATION
   # ============================================================
+
+  -
+    experiment:
+      name: direct_global_norm_euclidean_k1
+    preprocessing:
+      name: global_normalization
+      params:
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: direct
+      params:
+        center: false
 
   -
     experiment:
@@ -166,6 +187,20 @@ experiments:
   # ============================================================
   # 5. LOCAL NORMALIZATION - WINDOW SIZE STUDY
   # ============================================================
+
+  -
+    experiment:
+      name: direct_local_norm_w15_euclidean_k1
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 15
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: direct
+      params:
+        center: false
 
   -
     experiment:
@@ -481,6 +516,19 @@ experiments:
 
   -
     experiment:
+      name: direct_raw_cosine_l2_k1
+    model:
+      name: direct
+      params:
+        center: false
+    classifier:
+      params:
+        distance: cosine
+    projection:
+      normalize: true
+
+  -
+    experiment:
       name: eigenfaces_raw_cosine_l2_k1
     model:
       name: eigenfaces
@@ -541,6 +589,25 @@ experiments:
         lda_components: auto
         regularization: 1.0e-6
         eps: 1.0e-10
+    classifier:
+      params:
+        distance: cosine
+    projection:
+      normalize: true
+
+  -
+    experiment:
+      name: direct_local_norm_w15_cosine_l2_k1
+    preprocessing:
+      name: local_normalization
+      params:
+        window_size: 15
+        eps: 1.0e-6
+        output_type: float32
+    model:
+      name: direct
+      params:
+        center: false
     classifier:
       params:
         distance: cosine
@@ -635,6 +702,30 @@ experiments:
   # ============================================================
   # 9. KNN SENSITIVITY - RAW
   # ============================================================
+
+  -
+    experiment:
+      name: direct_raw_euclidean_k3
+    model:
+      name: direct
+      params:
+        center: false
+    classifier:
+      params:
+        k: 3
+        distance: euclidean
+
+  -
+    experiment:
+      name: direct_raw_euclidean_k5
+    model:
+      name: direct
+      params:
+        center: false
+    classifier:
+      params:
+        k: 5
+        distance: euclidean
 
   -
     experiment:

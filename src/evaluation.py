@@ -1,11 +1,11 @@
 import numpy as np
 
-from src.features import project_subspace_features
+from src.features import project_representation_features
 from src.metrics import accuracy_score, error_rate
 from src.knn import KNNClassifier
 
 
-def evaluate_subspace_model(
+def evaluate_representation_model(
     model,
     X_train: np.ndarray,
     y_train: np.ndarray,
@@ -19,7 +19,7 @@ def evaluate_subspace_model(
     classifier_params = {} if classifier_params is None else classifier_params
 
     for n_components in component_values:
-        Z_train, Z_test = project_subspace_features(
+        Z_train, Z_test = project_representation_features(
             model=model,
             X_train=X_train,
             X_test=X_test,

@@ -1,15 +1,12 @@
 # subspace-face-recognition
 
-Implementacion de Eigenfaces y Fisherfaces para reconocimiento facial en ORL.
+Implementacion de representacion directa, Eigenfaces y Fisherfaces para
+reconocimiento facial en ORL.
 
 ## Ejecucion rapida
 
 ```bash
 pip install -e .
-```
-
-```bash
-python scripts/run_fisherfaces.py
 ```
 
 ## Runner de experimentos
@@ -54,8 +51,9 @@ experiments:
 Usa `--overwrite` para regenerar el CSV desde cero.
 
 Cada configuracion permite parametrizar dataset, particion de imagenes,
-preprocesado, modelo, regularizacion numerica, dimensiones evaluadas, proyeccion,
-clasificador y salidas.
+preprocesado, modelo, regularizacion numerica, dimensiones evaluadas,
+proyeccion, clasificador y salidas. Los modelos disponibles son `direct`,
+`eigenfaces` y `fisherfaces`.
 
 Opciones utiles para los experimentos:
 
@@ -69,4 +67,9 @@ classifier:
   params:
     k: 1
     distance: euclidean  # euclidean | cosine
+
+model:
+  name: direct  # direct | eigenfaces | fisherfaces
+  params:
+    center: false
 ```

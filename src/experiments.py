@@ -10,7 +10,8 @@ from typing import Any, Callable
 import numpy as np
 
 from src.data import load_orl_dataset
-from src.features import effective_component_limit
+from src.features import default_component_values, effective_component_limit
+from src.models.direct import DirectRepresentation
 from src.models.eigenfaces import EigenFaces
 from src.models.fisherfaces import FisherFaces
 from src.preprocessing import (
@@ -19,7 +20,7 @@ from src.preprocessing import (
     local_histogram_equalization,
     local_normalization,
 )
-from src.evaluation import evaluate_subspace_model
+from src.evaluation import evaluate_representation_model
 from src.visualization import plot_components, plot_error_curve, plot_mean_face
 
 
@@ -219,12 +220,20 @@ def run_experiment(
         model,
         projection_params=projection_params,
     )
-    component_values = _resolve_component_values(
-        config.get("components"),
+    component_cfg = config.get("components")
+    component_values = default_component_values(
+        model=model,
+        component_cfg=component_cfg,
         max_components=max_components,
     )
 
-    results = evaluate_subspace_model(
+    if component_values is None:
+        component_values = _resolve_component_values(
+            component_cfg,
+            max_components=max_components,
+        )
+
+    results = evaluate_representation_model(
         model=model,
         X_train=X_train,
         y_train=y_train,
@@ -334,6 +343,9 @@ def _build_model(model_cfg) -> tuple[str, dict[str, Any], Any]:
     else:
         name = model_cfg.get("name", "eigenfaces")
         params = model_cfg.get("params", {})
+
+    if name == "direct":
+        return name, params, DirectRepresentation(**params)
 
     if name == "eigenfaces":
         return name, params, EigenFaces(**params)
@@ -547,14 +559,14 @@ def _save_figures_if_requested(
             show=False,
         )
 
-    if outputs_cfg.get("save_mean_face", True):
+    if outputs_cfg.get("save_mean_face", True) and hasattr(model, "mean_"):
         plot_mean_face(
             model,
             output_path=figures_dir / f"{prefix}_mean_face.png",
             show=False,
         )
 
-    if outputs_cfg.get("save_components", True):
+    if outputs_cfg.get("save_components", True) and hasattr(model, "components_"):
         plot_components(
             model,
             output_path=figures_dir / f"{prefix}_components.png",
