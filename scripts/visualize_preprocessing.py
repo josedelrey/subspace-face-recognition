@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-from src.data import read_grayscale_image
-from src.preprocessing import (
+from subspace_face_recognition.data import read_grayscale_image
+from subspace_face_recognition.preprocessing import (
     local_normalization,
     local_histogram_equalization,
 )

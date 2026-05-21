@@ -1,8 +1,8 @@
 import numpy as np
 
-from src.features import project_representation_features
-from src.metrics import accuracy_score, error_rate
-from src.knn import KNNClassifier
+from subspace_face_recognition.features import project_representation_features
+from subspace_face_recognition.metrics import accuracy_score, error_rate
+from subspace_face_recognition.knn import KNNClassifier
 
 
 def evaluate_representation_model(

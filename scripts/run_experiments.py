@@ -1,7 +1,7 @@
 from pathlib import Path
 import argparse
 
-from src.experiments import run_experiment_plan
+from subspace_face_recognition.experiments import run_experiment_plan
 
 
 def parse_args():

@@ -9,19 +9,26 @@ from typing import Any, Callable
 
 import numpy as np
 
-from src.data import load_orl_dataset
-from src.features import default_component_values, effective_component_limit
-from src.models.direct import DirectRepresentation
-from src.models.eigenfaces import EigenFaces
-from src.models.fisherfaces import FisherFaces
-from src.preprocessing import (
+from subspace_face_recognition.data import load_orl_dataset
+from subspace_face_recognition.features import (
+    default_component_values,
+    effective_component_limit,
+)
+from subspace_face_recognition.models.direct import DirectRepresentation
+from subspace_face_recognition.models.eigenfaces import EigenFaces
+from subspace_face_recognition.models.fisherfaces import FisherFaces
+from subspace_face_recognition.preprocessing import (
     global_histogram_equalization,
     global_normalization,
     local_histogram_equalization,
     local_normalization,
 )
-from src.evaluation import evaluate_representation_model
-from src.visualization import plot_components, plot_error_curve, plot_mean_face
+from subspace_face_recognition.evaluation import evaluate_representation_model
+from subspace_face_recognition.visualization import (
+    plot_components,
+    plot_error_curve,
+    plot_mean_face,
+)
 
 
 RESULT_FIELDNAMES = [

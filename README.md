@@ -9,6 +9,10 @@ reconocimiento facial en ORL.
 pip install -e .
 ```
 
+```python
+from subspace_face_recognition.data import load_orl_dataset
+```
+
 ## Runner de experimentos
 
 El runner recibe un plan YAML con `defaults` compartidos y una lista de

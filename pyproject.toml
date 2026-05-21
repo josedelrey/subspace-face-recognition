@@ -9,4 +9,4 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["src*"]
+include = ["subspace_face_recognition*"]
