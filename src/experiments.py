@@ -475,7 +475,7 @@ def _build_result_rows(
     model,
     elapsed_seconds: float,
 ) -> list[dict[str, Any]]:
-    pca_components = getattr(model, "pca_components_count", "")
+    pca_components = getattr(model, "pca_components_count_", "")
     image_height, image_width = image_shape
     classifier_k = classifier_params.get("k", 1)
     distance = classifier_params.get("distance", "euclidean")

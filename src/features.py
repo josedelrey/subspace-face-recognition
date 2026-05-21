@@ -21,7 +21,7 @@ def project_subspace_features(
 
     projected_components = n_components + drop_first_components
 
-    if projected_components > model.components.shape[0]:
+    if projected_components > model.components_.shape[0]:
         raise ValueError(
             "Requested projection exceeds the fitted subspace size"
         )
@@ -57,7 +57,7 @@ def effective_component_limit(
     if drop_first_components < 0:
         raise ValueError("drop_first_components cannot be negative")
 
-    limit = model.components.shape[0] - drop_first_components
+    limit = model.components_.shape[0] - drop_first_components
 
     if limit < 1:
         raise ValueError(

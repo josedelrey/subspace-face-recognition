@@ -38,7 +38,7 @@ def plot_mean_face(
     plt = _load_pyplot()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    mean_face = model.mean.reshape(model.image_shape)
+    mean_face = model.mean_.reshape(model.image_shape_)
 
     plt.figure(figsize=(4, 4))
     plt.imshow(mean_face, cmap="gray")
@@ -62,7 +62,7 @@ def plot_components(
     plt = _load_pyplot()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    n_components = min(n_components, model.components.shape[0])
+    n_components = min(n_components, model.components_.shape[0])
 
     cols = 4
     rows = int(np.ceil(n_components / cols))
@@ -70,7 +70,7 @@ def plot_components(
     plt.figure(figsize=(10, 2.5 * rows))
 
     for i in range(n_components):
-        component = model.components[i].reshape(model.image_shape)
+        component = model.components_[i].reshape(model.image_shape_)
 
         plt.subplot(rows, cols, i + 1)
         plt.imshow(component, cmap="gray")
@@ -87,6 +87,10 @@ def plot_components(
 
 
 def _load_pyplot():
+    import matplotlib
+
+    matplotlib.use("Agg")
+
     import matplotlib.pyplot as plt
 
     return plt

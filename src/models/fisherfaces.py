@@ -14,15 +14,15 @@ class FisherFaces:
         self.regularization = regularization
         self.eps = eps
 
-        self.mean = None
-        self.components = None
-        self.eigenvalues = None
-        self.image_shape = None
+        self.mean_ = None
+        self.components_ = None
+        self.eigenvalues_ = None
+        self.image_shape_ = None
 
         self.pca_components_ = None
-        self.pca_eigenvalues = None
-        self.pca_components_count = None
-        self.lda_components_count = None
+        self.pca_eigenvalues_ = None
+        self.pca_components_count_ = None
+        self.lda_components_count_ = None
         self.classes_ = None
 
     def fit(self, X: np.ndarray, y: np.ndarray, image_shape=None) -> None:
@@ -46,11 +46,11 @@ class FisherFaces:
         n_samples, _ = X.shape
         n_classes = classes.shape[0]
 
-        self.image_shape = image_shape
+        self.image_shape_ = image_shape
         self.classes_ = classes
-        self.mean = np.mean(X, axis=0)
+        self.mean_ = np.mean(X, axis=0)
 
-        X_centered = X - self.mean
+        X_centered = X - self.mean_
 
         _, singular_values, right_vectors = np.linalg.svd(
             X_centered,
@@ -75,10 +75,10 @@ class FisherFaces:
         pca_components_count = min(pca_components_count, max_pca_components)
 
         self.pca_components_ = right_vectors[:pca_components_count]
-        self.pca_eigenvalues = (
+        self.pca_eigenvalues_ = (
             singular_values[:pca_components_count] ** 2
         ) / max(n_samples - 1, 1)
-        self.pca_components_count = pca_components_count
+        self.pca_components_count_ = pca_components_count
 
         X_pca = X_centered @ self.pca_components_.T
 
@@ -105,33 +105,33 @@ class FisherFaces:
         components = lda_vectors.T @ self.pca_components_
         components = self._normalize_rows(components)
 
-        self.components = components
-        self.eigenvalues = lda_values[: components.shape[0]]
-        self.lda_components_count = components.shape[0]
+        self.components_ = components
+        self.eigenvalues_ = lda_values[: components.shape[0]]
+        self.lda_components_count_ = components.shape[0]
 
     def transform(
         self,
         X: np.ndarray,
         n_components: int | None = None,
     ) -> np.ndarray:
-        if self.mean is None or self.components is None:
+        if self.mean_ is None or self.components_ is None:
             raise ValueError("Model has not been fitted yet")
 
         if n_components is None:
-            n_components = self.components.shape[0]
+            n_components = self.components_.shape[0]
 
         if n_components < 1:
             raise ValueError("n_components must be positive")
 
-        if n_components > self.components.shape[0]:
+        if n_components > self.components_.shape[0]:
             raise ValueError(
                 "n_components exceeds the fitted Fisher subspace size"
             )
 
         X = X.astype(np.float64)
-        X_centered = X - self.mean
+        X_centered = X - self.mean_
 
-        return X_centered @ self.components[:n_components].T
+        return X_centered @ self.components_[:n_components].T
 
     def fit_transform(
         self,
