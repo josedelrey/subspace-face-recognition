@@ -70,12 +70,10 @@ def _integral_image(image: np.ndarray) -> np.ndarray:
         dtype=np.float64,
     )
 
-    for y in range(1, h + 1):
-        row_sum = 0.0
-
-        for x in range(1, w + 1):
-            row_sum += image[y - 1, x - 1]
-            integral[y, x] = integral[y - 1, x] + row_sum
+    integral[1:, 1:] = np.cumsum(
+        np.cumsum(image, axis=0),
+        axis=1,
+    )
 
     return integral
 
