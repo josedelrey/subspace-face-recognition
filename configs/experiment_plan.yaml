@@ -24,9 +24,9 @@ defaults:
     step: 1
 
   outputs:
-    results_csv: results/final_full_experiment_plan.csv
+    results_csv: results/full_results.csv
     save_figures: true
-    figures_dir: outputs/figures/final_full_plan
+    figures_dir: outputs/figures/full_plan
     save_error_curve: true
     save_mean_face: false
     save_components: false
